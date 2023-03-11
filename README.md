@@ -332,3 +332,13 @@ class SeasonsController extends AbstractController
 ```
 
 Depois que usamos o `$seasons->initialize()` em index, os nomes das temporadas ficam guardados. No entanto, a contagem de episódios fica zerada.
+
+# Para saber mais: PSRs
+O Symfony suporta as PSRs 6 e 16 para controle de cache. Os recursos de cache do Symfony do código deste projeto possui implementação diferente das PSRs. Se for usar cache, tente usar as PSRs por questões de compatibilidade futuras.
+
+# Configurações
+O Symfony separa os caches conforme seu ambiente (desenvolvimento ou produção). Assim, pastas diferente são criadas dentro do diretório cache para cada ambiente.
+
+Os caches contém pools, que agrupam elementos cacheáveis. O cache "app" dentro `cache/{ambiente}/pools` armazena os dados no sistema de arquivos por padrão.
+
+O arquivo `config\packages\cache.yaml` contém as configurações de cache do Symfony. Para mais detalhes, consulte a documentação: https://symfony.com/doc/current/components/cache.html 
