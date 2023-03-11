@@ -275,3 +275,5 @@ Template Twig para a ação `index` em `SeriesController`
         {% endfor %}
 
 ```
+# Conceito de cache
+É um local em que a busca por informações é mais rápida do que se você buscasse da fonte original. Os dados em cache tem a desvantagem de nem sempre refletirem o conteúdo da fonte original, além de não serem dados persistentes (são geralmente guardados em memória RAM).
