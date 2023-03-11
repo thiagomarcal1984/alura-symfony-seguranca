@@ -204,3 +204,74 @@ Finalmente, os arquivos de migrations foram atualizados para 2 migrations: a pri
         // ... restante do código das migrations.
     }
  ```
+
+# Exibindo os dados
+O controller foi criado usando o comando da CLI do Symfony:
+```
+php .\bin\console make:controller SeasonsController
+```
+O código do Controller, após as alterações, ficou assim: 
+```php
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Series;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class SeasonsController extends AbstractController
+{
+    #[Route('/series/{series}/seasons', name: 'app_seasons')]
+    public function index(Series $series): Response
+    {
+        $seasons = $series->getSeasons();
+
+        return $this->render('seasons/index.html.twig', [
+            'seasons' => $seasons,
+            'series' => $series,
+        ]);
+    }
+}
+```
+Template Twig para a ação `index` em `SeasonsController` (repare no filtro `length` nas badges para contar os episódios):
+```php
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Temporadas da série "{{ series.name }}"
+{% endblock %}
+
+{% block body %}
+<ul class="list-group">
+    {% for season in seasons %}
+    <li class="list-group-item d-flex justify-content-between">
+        Temporada {{ season.number }}
+        <span class="badge text-bg-secondary">{{ season.episodes | length }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+```
+
+Template Twig para a ação `index` em `SeriesController`
+```php
+        {% for series in seriesList %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{{ path('app_seasons', { series : series.id }) }}">
+                    {#
+                        /* Compare os parâmetros fornecidos na função path 
+                        com o da assinatura em SeasonsController:
+                        
+                        #[Route('/series/{series}/seasons', name: 'app_seasons')]
+                        public function index(Series $series): Response {...}
+                        */
+                    #}
+                    {{ series.name }}
+                </a>
+                {# ... Restante do código ... #}
+            </li>
+        {% endfor %}
+
+```
