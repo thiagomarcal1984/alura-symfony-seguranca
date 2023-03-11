@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\DTO\SeriesCreateFromInput;
+use App\Entity\Episode;
+use App\Entity\Season;
 use App\Entity\Series;
 use App\Form\SeriesType;
 use App\Repository\SeriesRepository;
@@ -34,23 +37,32 @@ class SeriesController extends AbstractController
 
     #[Route('/series/create', name: 'app_series_form', methods: ['GET'])]
     public function addSeriesForm() : Response {
-        $seriesForm = $this->createForm(SeriesType::class, new Series(''));
+        $seriesForm = $this->createForm(SeriesType::class, new SeriesCreateFromInput());
         return $this->renderForm('/series/form.html.twig', compact('seriesForm'));
     }
 
     #[Route('/series/create', name: 'app_add_series', methods: ['POST'])]
     public function addSeries(Request $request) : Response {
-        $series = new Series();
-        $seriesForm = $this->createForm(SeriesType::class, $series)
+        $input = new SeriesCreateFromInput();
+        $seriesForm = $this->createForm(SeriesType::class, $input)
             ->handleRequest($request) // Preenche o objeto $series com os dados da requisição.
-            // ->isValid() // booleano.
-            // ->isSubmitted() // booleano.
-            // ->getData() // Retorna cópia do objeto $series preenchido.
         ;
         if(!$seriesForm->isValid()) {
             return $this->renderForm('series/form.html.twig', compact('seriesForm'));
         }
+
+        $series = new Series($input->seriesName);
+
+        for ($i = 1; $i <= $input->seasonsQuantity; $i++) {
+            $season = new Season($i);
+            for ($j=1; $j <= $input->episodesPerSeason; $j++) { 
+                $season->addEpisode(new Episode($j));
+            }
+            $series->addSeason($season);
+        }
+
         $this->seriesRepository->save($series, true);
+        
         $this->addFlash(
             'success', 
             "Série \"{$series->getName()}\" incluída com sucesso."

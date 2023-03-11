@@ -8,27 +8,10 @@
 {% block title %}{{ series is defined ? 'Editar' : 'Nova' }} Série{% endblock %}
 
 {% block body %}
-    {#{ form(seriesForm) }#}
-    
     {{ form_start(seriesForm) }} 
-    <div class="alert alert-danger">
-        {{ form_errors(seriesForm) }}
-    </div>
-
-    <div class="row">
-        <div class="col-6">
-            {{ form_label(seriesForm.name, 'Nome' ) }}
-        </div>
-        <div class="col-6">
-            {{ form_widget(seriesForm.name, {'attr' : {'class' : 'text-center' } }) }}
-        </div>
-        <div class="col-12">
-            {{ form_errors(seriesForm.name) }}
-        </div>
-        <div class="col-12">
-            {{ form_widget(seriesForm.save, {'attr' : {'class' : 'btn-dark' } }) }}
-        </div>
-    </div>
+    {{ form_row(seriesForm.seriesName) }}
+    {{ form_row(seriesForm.seasonsQuantity) }}
+    {{ form_row(seriesForm.episodesPerSeason) }}
+    {{ form_widget(seriesForm.save, {'attr' : {'class' : 'btn-dark' } }) }}
     {{ form_end(seriesForm) }} 
-    
 {% endblock %}
