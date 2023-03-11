@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Form;
+
+use App\Entity\Series;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class SeriesType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add(child: 'name', options: [ 'label' => 'Nome' ])
+            // O texto do botão submit varia em função do tipo de formulário: edição ou criação.
+            ->add('save', SubmitType::class, [ 'label' => $options['is_edit'] ? 'Editar' : 'Adicionar' ])
+            ->setMethod($options['is_edit'] ? 'PATCH' : 'POST')
+        ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Series::class,
+            'is_edit' => false, // O valor padrão para a opção 'is_edit' no formulário é false.
+        ]);
+
+        $resolver->setAllowedTypes('is_edit', 'bool'); // O valor para 'is_edit' deve ser booleano.
+    }
+}
