@@ -728,3 +728,108 @@ A convenção para nomear as roles de usuários é `ROLE_<nome do papel>`.
 O comando `doctrine:migrations:migrate` roda todas as migrações que não foram executadas ainda.
 
 > Não custa reforçar: o código gerado pelo framework de migrations do Doctrine nem sempre é funcional. Teste ==SEMPRE== a atualização e o rollback da migration.
+
+# Formulário de login
+Mais detalhes na documentação: https://symfony.com/doc/current/security.html
+
+Para criar o formulário de login, crie o controller correspondente:
+```
+php .\bin\console make:controller Login                 
+
+ created: src/Controller/LoginController.php
+ created: templates/login/index.html.twig
+
+ 
+  Success! 
+ 
+
+ Next: Open your new controller class and add some pages!
+ ```
+ 
+ Código do arquivo `config\packages\security.yaml`:
+ ```YAML
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            # Qualquer recurso que case com o padrão acima não terá seu acesso restrito.
+            security: false # Liberação do acesso.
+        main:
+            lazy: true # Evita que a sessão seja criada enquanto ela não for necessária.
+            # O firewall main usa o provider app_user_provider.
+            provider: app_user_provider
+
+            # Se o usuário não estiver autenticado neste firewall, é redirecionado pra login.
+            form_login: 
+                login_path: app_login # Rota do redirecionamento caso não autenticado.
+                check_path: app_login # Rota de processamento da requisição POST do login.
+ ```
+O Symfony usa o conceito de firewalls. Os firewalls são acessados/separados por um padrão de RegEx (veja a configuração `firewalls:dev:pattern`).
+
+Cada firewall tem um nome diferente e um provedor de usuário diferente (conforme seção `providers`). No exemplo, o `provider` do firewall `main` é o mesmo da entidade User que criamos (veja a seção `providers`, ela tem o `app_user_provider`). 
+
+Os redirecionamentos voltados para autenticação e processamento do login são feitos conforme a seção `form_login` dentro do firewall (no nosso exemplo, o firewall `main`).
+
+O `LoginController` terá o seguinte código:
+```php
+<?php
+
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+
+class LoginController extends AbstractController
+{
+    #[Route('/login', name: 'app_login')]
+    public function index(AuthenticationUtils $autehenticationUtils): Response
+    {
+        // Última mensagem de erro de autenticação.
+        $error = $autehenticationUtils->getLastAuthenticationError();
+        // Último usuário que tentou ser autenticado.
+        $lastUsername = $autehenticationUtils->getLastUsername();
+
+        return $this->render('login/index.html.twig', [
+            'error' => $error,
+            'last_username' => $lastUsername,
+    ]);    }
+}
+```
+
+No template Twig para login do usuário, os campos de usuário e senha **NECESSARIAMENTE** precisam ser `_username` e `_password`:
+```HTML
+{% extends 'base.html.twig' %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+    {% if error %}
+        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+
+    <form action="{{ path('app_login') }}" method="post">
+        <label for="username">Email:</label>
+        <input type="text" id="username" name="_username" value="{{ last_username }}">
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="_password">
+
+        {# If you want to control the URL the user is redirected to on success
+        <input type="hidden" name="_target_path" value="/account"> #}
+
+        <button type="submit">Login</button>
+    </form>
+{% endblock %}
+```

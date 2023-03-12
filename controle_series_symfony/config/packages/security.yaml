@@ -12,10 +12,17 @@ security:
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
+            # Qualquer recurso que case com o padrão acima não terá seu acesso restrito.
+            security: false # Liberação do acesso.
         main:
-            lazy: true
+            lazy: true # Evita que a sessão seja criada enquanto ela não for necessária.
+            # O firewall main usa o provider app_user_provider.
             provider: app_user_provider
+
+            # Se o usuário não estiver autenticado neste firewall, é redirecionado pra login.
+            form_login: 
+                login_path: app_login # Rota do redirecionamento caso não autenticado.
+                check_path: app_login # Rota de processamento da requisição POST do login.
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
