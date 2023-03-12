@@ -406,3 +406,124 @@ class Series
     /*... resto do código... */ 
 }
 ```
+
+# Adicionando propriedade
+Vamos acrescentar o campo `watched` na entidade `Episode`, usando a CLI do Symfony:
+```
+php .\bin\console make:entity Episode
+ Your entity already exists! So let's add some new fields!
+
+ New property name (press <return> to stop adding fields):
+ > watched
+
+ Field type (enter ? to see all types) [string]:
+ > boolean
+
+ Can this field be null in the database (nullable) (yes/no) 
+[no]:
+ > no
+
+ updated: src/Entity/Episode.php
+
+ >
+
+
+ 
+  Success! 
+ 
+
+ Next: When you're ready, create a migration with php bin/console make:migration
+```
+A coluna da entidade ficaria assim: 
+```php
+class Episode
+{
+    /*... resto do código... */ 
+
+    #[ORM\Column]
+    // private ?bool $watched = null; // Código gerado pelo Symfony.
+    private bool $watched = false; // Código modificado por mim.
+
+    /*... resto do código... */ 
+}
+```
+
+Alterada a entidade, criamos uma nova migração usando o comando:
+```
+php .\bin\console make:migration
+```
+Altere o arquivo da migration no que for necessário (por exemplo, removendo a linha `$this->addSql('CREATE SCHEMA public');`).
+
+Finalmente, execute a migração:
+```
+php .\bin\console doctrine:migrations:migrate
+```
+
+Agora, a criação de `EpisodesController`:
+```
+php .\bin\console make:controller EpisodesController
+
+ created: src/Controller/EpisodesController.php
+ created: templates/episodes/index.html.twig
+
+ 
+  Success! 
+ 
+
+ Next: Open your new controller class and add some pages!
+ ```
+
+Segue novo código para o controller:
+```php
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Season;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class EpisodesController extends AbstractController
+{
+    #[Route('/season/{season}/episodes', name: 'app_episodes')]
+    public function index(Season $season): Response
+    {
+        return $this->render('episodes/index.html.twig', [
+            'season' => $season,
+            'series' => $season->getSeries(),
+            'episodes' => $season->getEpisodes(),
+        ]);
+    }
+}
+```
+Template Twig da ação index de `EpisodesController`:
+```php
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Episódios da temporada {{ season.number }} da série {{ series.name }}
+{% endblock %}
+
+{% block body %}
+    <ul class="list-group">
+        {% for episode in episodes %}
+            <li class="list-group-item">Episódio {{ episode.number }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+```
+Adaptação do template Twig da ação index de SeasonsController. ==Note que dentro do link fornecemos como parâmetro o id da season, não a season toda==:
+```php
+<ul class="list-group">
+    {% for season in seasons %}
+    <li class="list-group-item d-flex justify-content-between">
+        <a href="{{ path('app_episodes', { season: season.id }) }}">
+            Temporada {{ season.number }}
+        </a>
+        <span class="badge text-bg-secondary">{{ season.episodes | length }}</span>
+    </li>
+    {% endfor %}
+</ul>
+```
+Finalmente, as migrations foram alteradas para permitir a exclusão em cascata das entidades com relacionamentos.

@@ -21,8 +21,8 @@ class Series
         mappedBy: 'series',
         targetEntity: Season::class, 
         orphanRemoval: true,
-        // Persistência em cascata de temporadas.
-        cascade: ['persist']
+        // Persistência e remoção em cascata de temporadas.
+        cascade: ['persist', 'remove']
     )]
     #[ORM\Cache] // Habilita o Cache de Segundo Nível no relacionamento.
     private Collection $seasons;
