@@ -568,3 +568,79 @@ class EpisodesController extends AbstractController
     }
 }
 ```
+
+# Salvando no banco
+Atualização da lógica de atualização da lista de episódios assistidos, que está em `EpisodesController`:
+```php
+class EpisodesController extends AbstractController
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager
+    ) {}
+
+    /*... resto do código... */ 
+
+    #[Route(
+        '/season/{season}/episodes',
+        name: 'app_watch_episodes',
+        methods: ['POST']),
+    ]
+    public function watch(Season $season, Request $request): Response
+    {
+        $watchedEpisodes = array_keys(
+            $request->request->all('episodes')
+        );
+        $episodes = $season->getEpisodes();
+
+        foreach ($episodes as $episode) {
+            // Se o ID estiver na lista de assistidos, marca como true.
+            $episode->setWatched(
+                in_array($episode->getId(), $watchedEpisodes)
+            );
+        }
+
+        $this->entityManager->flush();
+
+        $this->addFlash(
+            "success",
+            "Episódios marcados como assistidos.",
+        );
+
+        return $this->redirectToRoute(
+            'app_episodes', 
+            ['season' => $season->getId()],
+        );
+        /* 
+        return new RedirectResponse(
+            "/season/{$season->getId()}/episodes"
+        );
+        */
+    }
+}
+```
+
+Atualização do formulário, para mostrar quais episódios foram ou não assistidos:
+```php
+<form method="post">
+    <ul class="list-group">
+        {% for episode in episodes %}
+            <li class="list-group-item d-flex justify-content-between">
+                <label for="episodes[{{episode.id}}]" class="container-fluid">
+                    Episódio {{ episode.number }}
+                </label>
+                <input type="checkbox" 
+                    name="episodes[{{episode.id}}]" 
+                    id="episodes[{{episode.id}}]"
+                    {% if episode.watched %} checked {% endif %}
+                />
+            </li>
+        {% endfor %}
+    </ul>
+    <button class="btn btn-primary my-2">
+        Salvar
+    </button>
+</form>
+```
+Perceba o `{% if episode.watched %} checked {% endif %}` no checkbox.
+
+O L2C (SLC, Cache de Segundo Nível) do Doctrine foi desabilitado para facilitar o desenvolvimento.

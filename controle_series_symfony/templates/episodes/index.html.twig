@@ -12,7 +12,11 @@
                     <label for="episodes[{{episode.id}}]" class="container-fluid">
                         Episódio {{ episode.number }}
                     </label>
-                    <input type="checkbox" name="episodes[{{episode.id}}]" id="episodes[{{episode.id}}]">
+                    <input type="checkbox" 
+                        name="episodes[{{episode.id}}]" 
+                        id="episodes[{{episode.id}}]"
+                        {% if episode.watched %} checked {% endif %}
+                    />
                 </li>
             {% endfor %}
         </ul>
