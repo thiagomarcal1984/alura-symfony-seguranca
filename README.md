@@ -1104,3 +1104,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /*... resto do código... */ 
 }
 ```
+
+# Buscando usuário
+As informações do usuário podem ser acessadas no template Twig via objeto `app.user`:
+```HTML
+<!-- Resto do código -->
+<body>
+    <div class="container">
+        <p>{{ app.user ? app.user.userIdentifier : "&lt;Anônimo&gt;" }}</p>
+        <!-- Resto do código -->
+    </div>
+        <!-- Resto do código -->
+</body>
+```
+Dentro do Controller, o usuário pode ser obtido por meio do método `$this->getUser()`:
+```php
+#[Route('/series', name: 'app_series', methods: ['GET'])]
+public function index(Request $request): Response
+{
+    $seriesList =  $this->seriesRepository->findAll();
+
+    return $this->render('series/index.html.twig', [
+        'seriesList' => $seriesList,
+        // Repassar o usuário para o template:
+        'user' => $this->getUser(), 
+    ]);
+}
+```
+
+Saiba mais na documentação: https://symfony.com/doc/current/security.html#fetching-the-user-object

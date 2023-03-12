@@ -32,6 +32,8 @@ class SeriesController extends AbstractController
 
         return $this->render('series/index.html.twig', [
             'seriesList' => $seriesList,
+            // Repassar o usuário para o template:
+            // 'user' => $this->getUser(), 
         ]);
     }
 
