@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EpisodeRepository::class)]
+#[ORM\Cache] // Habilita o Cache de Segundo Nível na entidade.
 class Episode
 {
     #[ORM\Id]

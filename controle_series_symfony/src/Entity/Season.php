@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SeasonRepository::class)]
+#[ORM\Cache] // Habilita o Cache de Segundo Nível na entidade.
 class Season
 {
     #[ORM\Id]
@@ -23,6 +24,7 @@ class Season
         // Persistência em cascata de episódios.
         cascade: ['persist']
     )]
+    #[ORM\Cache] // Habilita o Cache de Segundo Nível no relacionamento.
     private Collection $episodes;
 
     #[ORM\ManyToOne(inversedBy: 'seasons')]

@@ -342,3 +342,67 @@ O Symfony separa os caches conforme seu ambiente (desenvolvimento ou produção)
 Os caches contém pools, que agrupam elementos cacheáveis. O cache "app" dentro `cache/{ambiente}/pools` armazena os dados no sistema de arquivos por padrão.
 
 O arquivo `config\packages\cache.yaml` contém as configurações de cache do Symfony. Para mais detalhes, consulte a documentação: https://symfony.com/doc/current/components/cache.html 
+
+# Doctrine cache
+O arquivo `config\packages\doctrine.yaml` possibilita a configuração dos 3 tipos de cache do Doctrine:
+1. metadata_cache_driver (mapeamento ORM);
+2. query_cache_driver (consultas DQL); e
+3. result_cache_driver (resultados das consultas).
+
+```yaml
+doctrine:
+    orm:
+        # Configura o cache de metadados do Doctrine, 
+        # ou qualquer um dos outros dois tipos de cache.
+        metadata_cache_driver:
+            # O cache fica dentro de pool.
+            type: pool
+            # O pool pode ser cache.app ou cache.system.
+            pool: cache.app
+```
+
+É possível fazer um cache completo das entidades do Doctrine usando o Second Level Cache (Cache de Segundo Nível):
+
+```yaml
+doctrine:
+    orm:
+        second_level_cache:
+            # Habilitar o Cache de Segundo Nível (SLC).
+            enabled: true 
+            # Mesma coisa que os 3 caches do Doctrine.
+            region_cache_driver:    
+                type: pool
+                pool: cache.app
+```
+Existem configurações diferentes para outros ambientes (teste, produção etc.). O exemplo aqui foi usado para ambiente de desenvolvimento. Veja as partes do código com os textos `when@test` e `when@prod` no arquivo `config\packages\doctrine.yaml`.
+
+Aplicação do cache de segundo nível nas entidades e em seus relacionamentos:
+```php
+#[ORM\Cache] // Habilita o Cache de Segundo Nível na entidade.
+class Episode
+{ /*... resto do código... */ }
+```
+
+```php
+#[ORM\Cache] // Habilita o Cache de Segundo Nível na entidade.
+class Season
+{ 
+    /*... resto do código... */ 
+    #[ORM\Cache] // Habilita o Cache de Segundo Nível no relacionamento.
+    private Collection $episodes;
+
+    /*... resto do código... */ 
+}
+```
+
+```php
+#[ORM\Cache] // Habilita o Cache de Segundo Nível na entidade.
+class Series
+{
+    /*... resto do código... */
+    #[ORM\Cache] // Habilita o Cache de Segundo Nível no relacionamento.
+    private Collection $seasons;
+
+    /*... resto do código... */ 
+}
+```

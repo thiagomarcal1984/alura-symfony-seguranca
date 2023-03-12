@@ -15,6 +15,14 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+        # metadata_cache_driver:    # Configura o cache de metadados do Doctrine.
+        #     type: pool            # O cache fica dentro de pool.
+        #     pool: cache.app       # O pool cache.app vai guardar os dados ao invés do pool cache.system.
+        second_level_cache:
+            enabled: true # Habilitar o Cache de Segundo Nível (SLC).
+            region_cache_driver:    # Mesma coisa que o metadata_cache_driver, query_cache_driver e result_cache_driver.
+                type: pool          # O cache fica dentro de pool.
+                pool: cache.app     # O pool cache.app vai guardar os dados ao invés do pool cache.system.
 
 when@test:
     doctrine:

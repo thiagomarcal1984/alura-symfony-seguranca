@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SeriesRepository::class)]
+#[ORM\Cache] // Habilita o Cache de Segundo Nível na entidade.
 class Series
 {
     #[ORM\Id]
@@ -23,6 +24,7 @@ class Series
         // Persistência em cascata de temporadas.
         cascade: ['persist']
     )]
+    #[ORM\Cache] // Habilita o Cache de Segundo Nível no relacionamento.
     private Collection $seasons;
 
     public function __construct(
