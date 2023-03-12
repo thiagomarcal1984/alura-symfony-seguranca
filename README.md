@@ -527,3 +527,44 @@ Adaptação do template Twig da ação index de SeasonsController. ==Note que de
 </ul>
 ```
 Finalmente, as migrations foram alteradas para permitir a exclusão em cascata das entidades com relacionamentos.
+
+# Criando o formulário
+O HTML permite envio de dados em formato de array, no caso de checkboxes. Para isso, nomeie os checkboxes com o nome do array e dentro dele coloque o valor. Veja no código do template Twig do index de `EpisodesController`:
+```php
+<form method="post">
+    <ul class="list-group">
+        {% for episode in episodes %}
+            <li class="list-group-item d-flex justify-content-between">
+                <label for="episodes[{{episode.id}}]" class="container-fluid">
+                    Episódio {{ episode.number }}
+                </label>
+                <input type="checkbox" name="episodes[{{episode.id}}]" id="episodes[{{episode.id}}]">
+            </li>
+        {% endfor %}
+    </ul>
+    <button class="btn btn-primary my-2">
+        Salvar
+    </button>
+</form>
+```
+Perceba como nomeamos cada checkbox com `episodes[{{episode.id}}]`. O tipo `episodes` é um tipo não escalar, ou seja, é um tipo composto. Tipos não escalares são obtidos por meio do método `all` no Symfony:
+
+```php
+class EpisodesController extends AbstractController
+{
+    #[Route('/season/{season}/episodes', name: 'app_watch_episodes', methods: ['POST'])]
+    public function watch(Season $season, Request $request): Response
+    {
+        // Retornaria um dado escalar: vai quebrar.
+        // dd($request->request->get('episodes')); 
+        
+        // Retorna um array, um dado não escalar.
+        // dd($request->request->all('episodes')); 
+        
+        // Queremos só os IDs, não o status de cada episódio.
+        dd(array_keys($request->request->all('episodes'))); 
+
+        return $this->redirectToRoute('app_episodes');
+    }
+}
+```
