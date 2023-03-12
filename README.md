@@ -833,3 +833,239 @@ No template Twig para login do usuário, os campos de usuário e senha **NECESSA
     </form>
 {% endblock %}
 ```
+# Registrando usuários
+Vamos usar um bundle externo ao Symfony desta vez!
+
+```
+composer require symfonycasts/verify-email-bundle
+
+Info from https://repo.packagist.org: #StandWithUkraine
+Using version ^1.13 for symfonycasts/verify-email-bundle
+./composer.json has been updated
+Running composer update symfonycasts/verify-email-bundle
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 1 install, 0 updates, 0 removals
+  - Locking symfonycasts/verify-email-bundle (v1.13.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 1 install, 0 updates, 0 removals
+  - Downloading symfonycasts/verify-email-bundle (v1.13.0)
+  - Installing symfonycasts/verify-email-bundle (v1.13.0): Extracting archive
+Package sensio/framework-extra-bundle is abandoned, you should avoid using it. Use Symfony instead.
+Generating optimized autoload files
+109 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+
+Symfony operations: 1 recipe (9a9131f6dd84f1dde6b65b8e9a84b1c3)
+  - Configuring symfonycasts/verify-email-bundle (>=v1.13.0): From auto-generated recipe
+Executing script cache:clear [OK]
+Executing script assets:install public [OK]
+
+ What's next? 
+
+
+Some files have been created and/or updated to configure your new packages.
+Please review, edit and commit them: these files are yours.
+```
+
+Depois que o comando acima é executado, o arquivo `config/bundles.php` é atualizado:
+```php
+<?php
+return [
+    // ... outros bundles instalados.
+    SymfonyCasts\Bundle\VerifyEmail\SymfonyCastsVerifyEmailBundle::class => ['all' => true],
+];
+```
+
+Os arquivos atualizados ao adicionar essa dependência são:
+1. `composer.json`;
+2. `composer.lock`;
+3. `symfony.lock`;
+4. o próprio arquivo `config/bundles.php`.
+
+A dependência `SymfonyCastsVerifyEmailBundle` acrescenta à CLI do Symfony um comando novo para criar um formulário de criação de usuário:
+```
+php .\bin\console make:registration-form
+
+ Creating a registration form for App\Entity\User
+
+ Do you want to add a @UniqueEntity validation annotation on your User class to make sure duplicate accounts aren't created? (yes/no) [yes]:
+ > yes
+
+ Do you want to send an email to verify the user's email address after registration? (yes/no) [yes]:
+ > no
+
+ Do you want to automatically authenticate the user after registration? (yes/no) [yes]:
+ >
+
+ ! [NOTE] No Guard authenticators found - so your user      
+ !        won't be automatically authenticated after        
+ !        registering.                                      
+
+ What route should the user be redirected to after registration?:
+  [0 ] _preview_error
+  [1 ] _wdt
+  [2 ] _profiler_home
+  [3 ] _profiler_search
+  [4 ] _profiler_search_bar
+  [5 ] _profiler_phpinfo
+  [6 ] _profiler_xdebug
+  [7 ] _profiler_search_results
+  [8 ] _profiler_open_file
+  [9 ] _profiler
+  [10] _profiler_router
+  [11] _profiler_exception
+  [12] _profiler_exception_css
+  [13] app_episodes
+  [14] app_watch_episodes
+  [15] app_login
+  [16] app_seasons
+  [17] app_series
+  [18] app_series_form
+  [19] app_add_series
+  [20] app_delete_series
+  [21] app_edit_series_form
+  [22] app_store_series_changes
+ > 17
+
+ updated: src/Entity/User.php
+ created: src/Form/RegistrationFormType.php
+ created: src/Controller/RegistrationController.php
+ created: templates/registration/register.html.twig
+
+ 
+  Success! 
+ 
+
+ Next:
+ Make any changes you need to the form, controller & template.
+
+ Then open your browser, go to "/register" and enjoy your new form!
+```
+Depois que o assistente de criação de formulário de cadastro de usuários é executado, os seguintes arquivos são criados/modificados:
+1. updated: `src/Entity/User.php`:
+```php
+<?php
+
+namespace App\Entity;
+
+// ... outros imports...
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: '`user`')]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
+{ /*... resto do código... */ }
+```
+2. created: `src/Form/RegistrationFormType.php`:
+```php
+<?php
+
+namespace App\Form;
+
+use App\Entity\User;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\IsTrue;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+
+class RegistrationFormType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('email')
+            /*
+            ->add('agreeTerms', CheckboxType::class, [
+                'mapped' => false,
+                'constraints' => [
+                    new IsTrue([
+                        'message' => 'You should agree to our terms.',
+                    ]),
+                ],
+            ])
+            */
+            ->add('plainPassword', PasswordType::class, [
+                // instead of being set onto the object directly,
+                // this is read and encoded in the controller
+                'mapped' => false,
+                'attr' => ['autocomplete' => 'new-password'],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Please enter a password',
+                    ]),
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Your password should be at least {{ limit }} characters',
+                        // max length allowed by Symfony for security reasons
+                        'max' => 4096,
+                    ]),
+                ],
+            ])
+        ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => User::class,
+        ]);
+    }
+}
+```
+3. created: `src/Controller/RegistrationController.php`:
+```php
+class RegistrationController extends AbstractController
+{
+    #[Route('/register', name: 'app_register')]
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    {
+        $user = new User();
+        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // encode the plain password
+            $user->setPassword(
+                $userPasswordHasher->hashPassword(
+                    $user,
+                    $form->get('plainPassword')->getData()
+                )
+            );
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+            // do anything else you need here, like send an email
+
+            return $this->redirectToRoute('app_series');
+        }
+
+        return $this->render('registration/register.html.twig', [
+            'registrationForm' => $form->createView(),
+        ]);
+    }
+}
+```
+4. created: `templates/registration/register.html.twig`:
+```HTML
+{% extends 'base.html.twig' %}
+
+{% block title %}Cadastrar usuário{% endblock %}
+
+{% block body %}
+    {{ form_start(registrationForm) }}
+        {{ form_row(registrationForm.email) }}
+        {{ form_row(registrationForm.plainPassword, {
+            label: 'Senha'
+        }) }}
+
+        <button type="submit" class="btn btn-primary">Register</button>
+    {{ form_end(registrationForm) }}
+{% endblock %}
+```
