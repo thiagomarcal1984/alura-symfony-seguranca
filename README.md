@@ -1073,3 +1073,34 @@ class RegistrationController extends AbstractController
 O comando `make:registration-form` não é do bundle externo que instalamos. Ele já vem com o framework full-stack do Symfony e só depende do pacote symfonycasts/verify-email-bundle para realizar o processo de verificação de e-mail. Esse processo não foi mostrado nesse treinamento pois nós ainda não vimos como enviar e-mails, então algumas coisas ficariam confusas.
 
 Mas esse bundle instalado, na verdade, não foi usado no último vídeo e pode inclusive ser removido. 
+
+# Protegendo rotas
+Configure o controle de acesso por meio da configuração `security:access_control` no arquivo `config\packages\security.yaml`:
+```YAML
+security:
+    access_control:
+        # Qualquer path diferente de login e register só é autorizado depois de logado.
+        - { path: ^/(?!login|register), roles: ROLE_USER } 
+
+```
+Veja que a entidade de usuário garante que pelo menos o papel `ROLE_USER` existe para todos os usuários logados:
+```php
+/*... resto do código... */ 
+class User implements UserInterface, PasswordAuthenticatedUserInterface
+{
+    /*... resto do código... */ 
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // Garante que todos os usuários tenham pelo menos o papel ROLE_USER.
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+    /*... resto do código... */ 
+}
+```

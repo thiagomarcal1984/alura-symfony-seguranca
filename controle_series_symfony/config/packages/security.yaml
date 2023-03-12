@@ -23,6 +23,7 @@ security:
             form_login: 
                 login_path: app_login # Rota do redirecionamento caso não autenticado.
                 check_path: app_login # Rota de processamento da requisição POST do login.
+                default_target_path: app_series # Rota padrão após realizar o login.
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -34,7 +35,8 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/(?!login|register), roles: ROLE_USER } 
+        # Qualquer path diferente de login e register só é autorizado depois de logado.
 
 when@test:
     security:
