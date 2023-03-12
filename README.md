@@ -644,3 +644,38 @@ Atualização do formulário, para mostrar quais episódios foram ou não assist
 Perceba o `{% if episode.watched %} checked {% endif %}` no checkbox.
 
 O L2C (SLC, Cache de Segundo Nível) do Doctrine foi desabilitado para facilitar o desenvolvimento.
+
+# Episódios assistidos
+Mudanças na entidade `Season`:
+```php
+class Season
+{
+    /*... resto do código... */ 
+    /**
+     * @return Collection<int, Episode>
+     */
+    public function getEpisodes(): Collection
+    {
+        return $this->episodes;
+    }
+
+    /**
+     * @return Collection<int, Episode>
+     */
+    public function getWatchedEpisodes(): Collection
+    {
+        return $this->episodes->filter(
+            fn(Episode $episode) => $episode->isWatched()
+        );
+    }
+    /*... resto do código... */ 
+}
+```
+Perceba o método `filter` dentro da coleção de episodes: ela recebe como parâmetro um objeto do tipo `Clojure`, que nada mais é do que uma função lambda. Uma `Clojure` é criada usando a função `fn`. A partir daí, a sintaxe é muito semelhante à do JavaScript.
+
+Alteração da badge mostrando a proporção de episódios assistidos:
+```php
+<span class="badge text-bg-secondary">
+    {{ season.watchedEpisodes | length }} / {{ season.episodes | length }}
+</span>
+```
