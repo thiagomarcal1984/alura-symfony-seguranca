@@ -513,7 +513,7 @@ Template Twig da ação index de `EpisodesController`:
     </ul>
 {% endblock %}
 ```
-Adaptação do template Twig da ação index de SeasonsController. ==Note que dentro do link fornecemos como parâmetro o id da season, não a season toda==:
+Adaptação do template Twig da ação index de SeasonsController. **Note que dentro do link fornecemos como parâmetro o id da season, não a season toda**:
 ```php
 <ul class="list-group">
     {% for season in seasons %}
@@ -727,7 +727,7 @@ A convenção para nomear as roles de usuários é `ROLE_<nome do papel>`.
 
 O comando `doctrine:migrations:migrate` roda todas as migrações que não foram executadas ainda.
 
-> Não custa reforçar: o código gerado pelo framework de migrations do Doctrine nem sempre é funcional. Teste ==SEMPRE== a atualização e o rollback da migration.
+> Não custa reforçar: o código gerado pelo framework de migrations do Doctrine nem sempre é funcional. Teste **SEMPRE** a atualização e o rollback da migration.
 
 # Formulário de login
 Mais detalhes na documentação: https://symfony.com/doc/current/security.html
@@ -1069,3 +1069,7 @@ class RegistrationController extends AbstractController
     {{ form_end(registrationForm) }}
 {% endblock %}
 ```
+# Para saber mais: Bundle
+O comando `make:registration-form` não é do bundle externo que instalamos. Ele já vem com o framework full-stack do Symfony e só depende do pacote symfonycasts/verify-email-bundle para realizar o processo de verificação de e-mail. Esse processo não foi mostrado nesse treinamento pois nós ainda não vimos como enviar e-mails, então algumas coisas ficariam confusas.
+
+Mas esse bundle instalado, na verdade, não foi usado no último vídeo e pode inclusive ser removido. 
