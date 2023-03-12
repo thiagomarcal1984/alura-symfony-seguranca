@@ -679,3 +679,52 @@ Alteração da badge mostrando a proporção de episódios assistidos:
     {{ season.watchedEpisodes | length }} / {{ season.episodes | length }}
 </span>
 ```
+# Criando entidade User
+O usuário no Symfony é um objeto de infraestrutura, não um objeto de domínio. Caso você precise incluir o usuário como classe de domínio, adapte a classe para tal.
+
+A criação de um usuário no Symfony pode ser feita via CLI:
+```
+ php .\bin\console make:user
+
+ The name of the security user class (e.g. User) [User]:
+ >
+
+ Do you want to store user data in the database (via Doctrine)? (yes/no) [yes]:
+ > 
+
+ Enter a property name that will be the unique "display" name for the user (e.g. email, username, uuid) [email]:        
+ > 
+
+ Will this app need to hash/check user passwords? Choose No 
+if passwords are not needed or will be checked/hashed by some other system (e.g. a single sign-on server).
+
+ Does this app need to hash/check user passwords? (yes/no) [yes]:
+ >
+
+ created: src/Entity/User.php
+ created: src/Repository/UserRepository.php
+ updated: src/Entity/User.php
+ updated: config/packages/security.yaml
+
+ 
+  Success! 
+ 
+
+ Next Steps:
+   - Review your new App\Entity\User class.
+   - Use make:entity to add more fields to your User entity 
+and then run make:migration.
+   - Create a way to authenticate! See https://symfony.com/doc/current/security.html
+```
+
+Após a criação do usuário, o arquivo `config\packages\security.yaml` é modificado para conter as referências ao novo usuário criado e ao provider de usuário (banco de dados, LDAP etc.).
+
+A classe User implementa duas interfaces:
+1. UserInterface (para obter a identificação do usuário; força a implementação dos métodos `getRoles()`, `eraseCredentials()`e `getUserIdentifier()`); e
+2. PasswordAuthenticatedUserInterface (para lidar com a senha; força a implementação do método `getPassword()`).
+
+A convenção para nomear as roles de usuários é `ROLE_<nome do papel>`.
+
+O comando `doctrine:migrations:migrate` roda todas as migrações que não foram executadas ainda.
+
+> Não custa reforçar: o código gerado pelo framework de migrations do Doctrine nem sempre é funcional. Teste ==SEMPRE== a atualização e o rollback da migration.
