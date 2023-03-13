@@ -37,6 +37,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        # Tudo debaixo /series NÃO é público. Veja a RegEx: ela permite só "/series".
+        - { path: ^/series$, roles: PUBLIC_ACCESS } 
         # - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/(?!login|register), roles: ROLE_USER } 
         # Qualquer path diferente de login e register só é autorizado depois de logado.

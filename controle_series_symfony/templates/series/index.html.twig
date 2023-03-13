@@ -3,24 +3,32 @@
 {% block title %}Listagem de Séries{% endblock %}
 
 {% block body %}
-    <a class="btn btn-dark mb-3" href="{{ path('app_series_form') }}">Adicionar</a>
+    {% if is_granted('ROLE_USER')%}
+        <a class="btn btn-dark mb-3" href="{{ path('app_series_form') }}">Adicionar</a>
+    {% endif %}
     <ul class="list-group">
         {% for series in seriesList %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="{{ path('app_seasons', { series : series.id }) }}">
-                    {{ series.name }}
-                </a>
-                <div class="d-flex">
-                    <a href="{{ path('app_edit_series_form', { series: series.id }) }}" class="btn btn-sm btn-primary me-2">
-                        E
+                {% if is_granted('ROLE_USER')%}
+                    <a href="{{ path('app_seasons', { series : series.id }) }}">
+                        {{ series.name }}
                     </a>
-                    <form action="{{ path('app_delete_series', { id: series.id }) }}" method="post">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button class="btn btn-sm btn-danger">
-                            X
-                        </button>
-                    </form>
-                </div>
+                {% else %}
+                    {{ series.name }}
+                {% endif %}
+                {% if is_granted('ROLE_USER')%}
+                    <div class="d-flex">
+                        <a href="{{ path('app_edit_series_form', { series: series.id }) }}" class="btn btn-sm btn-primary me-2">
+                            E
+                        </a>
+                        <form action="{{ path('app_delete_series', { id: series.id }) }}" method="post">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button class="btn btn-sm btn-danger">
+                                X
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>

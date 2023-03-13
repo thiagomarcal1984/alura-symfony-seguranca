@@ -1158,3 +1158,74 @@ app_logout:
     path: /logout
     methods: GET
 ```
+# Limitando acesso
+Leia a documentação: https://symfony.com/doc/current/security.html#access-control-authorization
+
+Hierarquia de papeis:
+```YAML
+security:
+    # ...
+
+    role_hierarchy:
+        ROLE_ADMIN:       ROLE_USER # ROLE_ADMIN é um ROLE_USER também.
+        # ROLE_SUPER_ADMIN é ROLE_ADMIN, ROLE_USER (por herança) e ROLE_ALLOWED_TO_SWITCH.
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+```
+
+Proibindo acesso, no arquivo `config\packages\security.yaml`, usando casamento de padrões (RegEx):
+```YAML
+# config/packages/security.yaml
+security:
+    # ...
+
+    access_control:
+        # matches /admin/users/*
+        - { path: '^/admin/users', roles: ROLE_SUPER_ADMIN }
+
+        # matches /admin/* except for anything matching the above rule
+        - { path: '^/admin', roles: ROLE_ADMIN }
+
+# or require ROLE_ADMIN or IS_AUTHENTICATED_FULLY for /admin*
+        - { path: '^/admin', roles: [IS_AUTHENTICATED_FULLY, ROLE_ADMIN] }
+```
+
+Note que há duas formas de verificar se um usuário está logado: se ele tem o role `IS_AUTHENTICATED_FULLY` ou se ele tem o role `ROLE_USER`. `ROLE_USER` é declarado na entidade Usuário; já o role `IS_AUTHENTICATED_FULLY` não precisa estar declarado em lugar algum, porque é um role padrão do Symfony.
+
+> Conteúdo público pode ser acessível para o role `PUBLIC_ACCESS`: esse role é concedido mesmo sem o usuário estar logado.
+
+Proibindo acesso, no controller, a quem não tiver um papel:
+```php
+// src/Controller/AdminController.php
+// ...
+
+public function adminDashboard(): Response
+{
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    // or add an optional message - seen by developers
+    $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'User tried to access a page without having ROLE_ADMIN');
+}
+```
+Outra forma de proibir o acesso é usando a anotação `#[IsGranted("ROLE_PAPEL")]`:
+```PHP
+// src/Controller/AdminController.php
+// ...
+
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')] // Papel MENOS restrito.
+class AdminController extends AbstractController
+{
+    #[IsGranted('ROLE_SUPER_ADMIN')] // Papel MAIS restrito.
+    public function adminDashboard(): Response
+    {
+        // ...
+    }
+}
+```
+Limitando exibição de conteúdo nos templates Twig em função das roles do usuário:
+```HTML
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+    <p>Email: {{ app.user.email }}</p>
+{% endif %}
+```
