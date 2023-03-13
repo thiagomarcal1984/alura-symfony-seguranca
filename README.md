@@ -1133,3 +1133,28 @@ public function index(Request $request): Response
 ```
 
 Saiba mais na documentação: https://symfony.com/doc/current/security.html#fetching-the-user-object
+
+# Fazendo logout
+O legal é que o logout não depende de um controller ou action separados! É muito simples: basta editar os arquivos de configuração `config\packages\security.yaml` e `config\routes.yaml`:
+
+```YAML
+# config\packages\security.yaml
+security:
+    firewalls:
+        main:
+            # Se o usuário não estiver autenticado neste firewall, é redirecionado pra login.
+            form_login: 
+                login_path: app_login # Rota do redirecionamento caso não autenticado.
+                check_path: app_login # Rota de processamento da requisição POST do login.
+                default_target_path: app_series # Rota padrão após realizar o login.
+            logout:
+                path: app_logout # Rota que vai realizar o logout.
+                # A rota app_logout é definida no arquivo config/routes.yaml.
+                target: app_login # Rota padrão após realizar o logout.
+```
+```YAML
+# config\routes.yaml
+app_logout:
+    path: /logout
+    methods: GET
+```

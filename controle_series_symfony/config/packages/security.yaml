@@ -24,6 +24,9 @@ security:
                 login_path: app_login # Rota do redirecionamento caso não autenticado.
                 check_path: app_login # Rota de processamento da requisição POST do login.
                 default_target_path: app_series # Rota padrão após realizar o login.
+            logout:
+                path: app_logout # Rota que vai realizar o logout.
+                target: app_login # Rota padrão após realizar o logout.
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
